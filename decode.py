@@ -6,6 +6,7 @@ from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 
 from decode_number import decode_number
+from byte_stream_parser import ByteStreamParser
 
 PUBLIC_KEY = "AwEAA0VDQ1UAAAABAAwxLjMuMTMyLjAuMzQAYwRhBI1vbBVnA1KE/T1UpdQYzG6LLot++cuCP5DdEdeKtedw5G8RKAhU0KbNXVUwym8CSwUyzdAPC98DAgvkJGOZA/x+cnJOWhVvYTqJvy+IlcOgjSe9kqs0O7zEBy26UmvlIw=="
 EXPECTED_CURVE_PARAMS = "1.3.132.0.34"
@@ -38,18 +39,21 @@ with open("data.dat") as f:  # QR code scan result
     number = f.read().strip()
 
 data = decode_number(number)
+print(data.hex())
+print()
+
+parsed_bytestream = ByteStreamParser(data)
 
 expected_signature = (
     bytes.fromhex("30640230")  # TODO: extract these from `data`
-    + data[1361 + 6 : 1361 + 6 + 48]
+    + parsed_bytestream.a[:48]
     + bytes.fromhex("0230")  # TODO: extract these from `data`
-    + data[1361 + 6 + 48 : -2]
+    + parsed_bytestream.a[48:]
 )
 print()
-print(data[:1361].hex())
-print()
 print(expected_signature.hex())
-hashed = SHA384.new(data[:1361])
+
+hashed = SHA384.new(parsed_bytestream.b)
 print()
 print(hashed.digest().hex())
 print()
@@ -61,8 +65,10 @@ except Exception:
     print("verification failed")
 
 pic = data[15:1199]
-# der_encoded_signature = data[1361:]  # FIXME: i don't think it's der-encoded
 compressed_fields = data[1263:-104]
+print("compressed data", compressed_fields.hex())
 
 decompressed_fields = zlib.decompress(compressed_fields)
 print(decompressed_fields)
+
+print()
