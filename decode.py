@@ -64,12 +64,12 @@ try:
 except Exception:
     print("verification failed")
 
-pic = data[15:1199]
+pic = data[15:1199]  # TODO: un-hardcode and decode (if it exists)
 print()
 print(pic.hex())
 print()
 
-compressed_fields = data[1263:-104]
+compressed_fields = parsed_bytestream.zip_payloads[0][2:]
 print("compressed data", compressed_fields.hex())
 
 decompressed_fields = zlib.decompress(compressed_fields)

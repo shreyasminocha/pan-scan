@@ -19,6 +19,9 @@ class ByteStreamParser:
         self.e = stream.read_short()  # is put into s1/b;->e
         print(self.e)
 
+        self.aux_payloads = []
+        self.zip_payloads = []
+
         # number of structures to read
         # excluding (1) zipped data, and (2) signature
         num_structs = stream.read_byte()
@@ -45,6 +48,7 @@ class ByteStreamParser:
             print(n)
 
             stuffs = stream.read(n)
+            self.aux_payloads.append(stuffs)
             print(stuffs.hex())
 
         num_zipped_structs = stream.read_byte(signed=False)
@@ -68,6 +72,7 @@ class ByteStreamParser:
             print(n)
 
             stuffs = stream.read(n)
+            self.zip_payloads.append(stuffs)
             print(stuffs.hex())
 
         # non-signature-related bytes
