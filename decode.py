@@ -65,6 +65,10 @@ except Exception:
     print("verification failed")
 
 pic = data[15:1199]
+print()
+print(pic.hex())
+print()
+
 compressed_fields = data[1263:-104]
 print("compressed data", compressed_fields.hex())
 
