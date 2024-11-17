@@ -7,6 +7,7 @@ from Crypto.Signature import DSS
 
 from decode_number import decode_number
 from byte_stream_parser import ByteStreamParser
+from renderer import render_uncompressed
 
 PUBLIC_KEY = "AwEAA0VDQ1UAAAABAAwxLjMuMTMyLjAuMzQAYwRhBI1vbBVnA1KE/T1UpdQYzG6LLot++cuCP5DdEdeKtedw5G8RKAhU0KbNXVUwym8CSwUyzdAPC98DAgvkJGOZA/x+cnJOWhVvYTqJvy+IlcOgjSe9kqs0O7zEBy26UmvlIw=="
 EXPECTED_CURVE_PARAMS = "1.3.132.0.34"
@@ -73,6 +74,7 @@ compressed_fields = parsed_bytestream.zip_payloads[0][2:]
 print("compressed data", compressed_fields.hex())
 
 decompressed_fields = zlib.decompress(compressed_fields)
-print(decompressed_fields)
-
+print(decompressed_fields.hex())
 print()
+
+render_uncompressed(decompressed_fields)

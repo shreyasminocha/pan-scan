@@ -9,6 +9,9 @@ class DataInputStream:
         self.bytes = buffer
         self.position = 0
 
+    def is_empty(self):
+        return self.position >= len(self.bytes)
+
     def read(self, length: int):
         result = self.bytes[self.position : self.position + length]
         self.position += length
