@@ -1,13 +1,12 @@
 import zlib
 import logging
 
-from Crypto.Hash import SHA384
-from Crypto.PublicKey import ECC
-from Crypto.Signature import DSS
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 
 from .decode_number import decode_number
 from .byte_stream_parser import ByteStreamParser
-from .public_key import PUBLIC_KEY_CURVE, PUBLIC_KEY_X, PUBLIC_KEY_Y
+from .crypto import CURVE, PUBLIC_KEY_POINT, HASH
 from .renderer import render_uncompressed
 
 logger = logging.getLogger(__name__)
@@ -18,42 +17,24 @@ def decode_pan_code(number: str) -> str:
     logger.debug("decoded bytestream: %s", data.hex())
 
     parsed_bytestream = ByteStreamParser(data)
+    logger.debug("body: %s", parsed_bytestream.body.hex())
 
-    expected_signature = (
-        bytes.fromhex("30640230")  # TODO: extract these from `data`
-        + parsed_bytestream.signature[:48]
-        + bytes.fromhex("0230")  # TODO: extract these from `data`
-        + parsed_bytestream.signature[48:]
+    r = int.from_bytes(parsed_bytestream.signature[:48], byteorder="big")
+    s = int.from_bytes(parsed_bytestream.signature[48:], byteorder="big")
+    expected_signature = encode_dss_signature(r, s)
+    logger.debug("expected signature (der): %s", expected_signature.hex())
+
+    public_key = ec.EllipticCurvePublicKey.from_encoded_point(
+        CURVE(),
+        PUBLIC_KEY_POINT,
     )
-    logger.debug("expected signature: %s", expected_signature.hex())
-
-    hashed = SHA384.new(parsed_bytestream.body)
-    logger.debug("checksum: %s", hashed.digest().hex())
-
-    # public_key = base64.b64decode(PUBLIC_KEY)
-    # public_key_preamble, public_key_point = public_key[:28], public_key[30:]
-
-    # FIXME: i think we're importing/constructing the key incorrectly
-    # pk = ECC.import_key(public_key_point, curve_name=PUBLIC_KEY_CURVE)
-    pk = ECC.construct(
-        curve=PUBLIC_KEY_CURVE,
-        point_x=PUBLIC_KEY_X,
-        point_y=PUBLIC_KEY_Y,
-    )
-    logger.debug(pk)
-
-    # FIXME: not sure which one it's supposed to be
-    mode = "deterministic-rfc6979"
-    # mode = "fips-186-3"
-
-    verifier = DSS.new(pk, mode, encoding="binary")
 
     try:
-        verifier.verify(hashed, expected_signature)
+        public_key.verify(expected_signature, parsed_bytestream.body, ec.ECDSA(HASH()))
         logger.info("verification passed")
     except Exception:
         print("error: verification failed")
-        print()
+        exit(2)
 
     for payload in parsed_bytestream.aux_payloads:
         # TODO: decode pic (if it exists)

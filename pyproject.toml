@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "pan-decode"
 version = "0.0.0"
-dependencies = ["pycryptodome"]
+dependencies = ["cryptography"]
 requires-python = ">=3.12"
 description = "Decodes Indian PAN cards"
 readme = "README.md"
