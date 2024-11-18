@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 def decode_pan_code(number: str) -> str:
     data = decode_number(number)
-    logger.debug("decoded bytestream", data.hex())
+    logger.debug("decoded bytestream: %s", data.hex())
 
     parsed_bytestream = ByteStreamParser(data)
 
@@ -25,10 +25,10 @@ def decode_pan_code(number: str) -> str:
         + bytes.fromhex("0230")  # TODO: extract these from `data`
         + parsed_bytestream.signature[48:]
     )
-    logger.debug("expected signature", expected_signature.hex())
+    logger.debug("expected signature: %s", expected_signature.hex())
 
     hashed = SHA384.new(parsed_bytestream.body)
-    logger.debug("actual signature", hashed.digest().hex())
+    logger.debug("actual signature: %s", hashed.digest().hex())
 
     # public_key = base64.b64decode(PUBLIC_KEY)
     # public_key_preamble, public_key_point = public_key[:28], public_key[30:]
@@ -57,14 +57,14 @@ def decode_pan_code(number: str) -> str:
 
     for payload in parsed_bytestream.aux_payloads:
         # TODO: decode pic (if it exists)
-        logger.debug("payload", payload.hex())
+        logger.debug("aux payload: %s", payload.hex())
 
     assert len(parsed_bytestream.zip_payloads) == 1
     zip_payload = parsed_bytestream.zip_payloads[0]
     compressed_fields = zip_payload[2:]
-    logger.debug("compressed data", compressed_fields.hex())
+    logger.debug("compressed data: %s", compressed_fields.hex())
 
     uncompressed_fields = zlib.decompress(compressed_fields)
-    logger.debug("uncompressed data", uncompressed_fields.hex())
+    logger.debug("uncompressed data: %s", uncompressed_fields.hex())
 
     return render_uncompressed(uncompressed_fields)
