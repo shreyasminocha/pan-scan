@@ -1,7 +1,8 @@
 fix:
-	black .
-	ruff check --fix .
+	black src
+	ruff check --fix src
 
 check:
-	black --check .
-	ruff check .
+	black --check src
+	ruff check src
+	mypy src

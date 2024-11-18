@@ -1,7 +1,4 @@
-from pwn import u8, u16, u32, context
-
-context.signed = True
-context.endianness = "big"
+from struct import unpack
 
 
 class DataInputStream:
@@ -12,19 +9,31 @@ class DataInputStream:
         self.buffer = buffer
         self.position = 0
 
-    def is_empty(self):
+    def is_empty(self) -> bool:
         return self.position >= len(self.buffer)
 
-    def read(self, length: int):
+    def read(self, length: int) -> bytes:
         result = self.buffer[self.position : self.position + length]
         self.position += length
         return result
 
     def read_byte(self, **kwargs):
-        return u8(self.read(1))
+        signed = kwargs.get("signed", True)
+        fmt = "b" if signed else "B"
+        [val] = unpack(fmt, self.read(1))
+
+        return val
 
     def read_short(self, **kwargs):
-        return u16(self.read(2), **kwargs)
+        signed = kwargs.get("signed", True)
+        fmt = "h" if signed else "H"
+        [val] = unpack(">" + fmt, self.read(2))
+
+        return val
 
     def read_int(self, **kwargs):
-        return u32(self.read(4), **kwargs)
+        signed = kwargs.get("signed", True)
+        fmt = "i" if signed else "I"
+        [val] = unpack(">" + fmt, self.read(4))
+
+        return val
