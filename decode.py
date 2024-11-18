@@ -1,3 +1,6 @@
+import sys
+import logging
+import argparse
 import base64
 import zlib
 
@@ -14,6 +17,23 @@ EXPECTED_CURVE_PARAMS = "1.3.132.0.34"
 SOME_EC_POINT = "04AA87CA22BE8B05378EB1C71EF320AD746E1D3B628BA79B9859F741E082542A385502F25DBF55296C3A545E3872760AB73617DE4A96262C6F5D9E98BF9292DC29F8F41DBD289A147CE9DA3113B5F0B8C00A60B1CE1D7E819D7A431D7C90EA0E5F"
 ANOTHER_CRYPTO_PARAM = "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC7634D81F4372DDF581A0DB248B0A77AECEC196ACCC52973"
 
+logger = logging.getLogger(__name__)
+
+parser = argparse.ArgumentParser(
+    prog="pan-decode",
+    description="Decode Indian PAN cards",
+)
+
+parser.add_argument(
+    "filename",
+    help="Path to the QR code data",
+    nargs="?",
+    type=argparse.FileType("r"),
+    default=sys.stdin,
+)
+
+args = parser.parse_args()
+
 public_key = base64.b64decode(PUBLIC_KEY)
 public_key_preamble, public_key_point = public_key[:28], public_key[30:]
 
@@ -24,7 +44,7 @@ pk = ECC.construct(
     point_x=21768876250334385725747672907467582086806720528308407299377393892072621925580424420270966419451131233829776989815371,
     point_y=800115138542352385268888331835970223045897418344421089670732162051188097710073126270498232678219200858362384999715,
 )
-print(pk)
+logger.debug(pk)
 
 # FIXME: not sure which one it's supposed to be
 randfunc = "deterministic-rfc6979"
@@ -32,16 +52,13 @@ randfunc = "deterministic-rfc6979"
 
 verifier = DSS.new(pk, randfunc, encoding="binary")
 
-# print(base64.b64decode(PUBLIC_KEY))
-# print(base64.b64decode(PUBLIC_KEY)[30:].hex())
+# logger.debug(base64.b64decode(PUBLIC_KEY))
+# logger.debug(base64.b64decode(PUBLIC_KEY)[30:].hex())
 
-number = ""
-with open("data.dat") as f:  # QR code scan result
-    number = f.read().strip()
+number = args.filename.read().strip()
 
 data = decode_number(number)
-print(data.hex())
-print()
+logger.debug("decoded bytestream", data.hex())
 
 parsed_bytestream = ByteStreamParser(data)
 
@@ -51,30 +68,25 @@ expected_signature = (
     + bytes.fromhex("0230")  # TODO: extract these from `data`
     + parsed_bytestream.a[48:]
 )
-print()
-print(expected_signature.hex())
+logger.debug("expected signature", expected_signature.hex())
 
 hashed = SHA384.new(parsed_bytestream.b)
-print()
-print(hashed.digest().hex())
-print()
+logger.debug("actual signature", hashed.digest().hex())
 
 try:
     verifier.verify(hashed, expected_signature)
-    print("verification passed")
+    logger.info("verification passed")
 except Exception:
-    print("verification failed")
+    print("error: verification failed")
+print()
 
 pic = data[15:1199]  # TODO: un-hardcode and decode (if it exists)
-print()
-print(pic.hex())
-print()
+logger.debug("pic bytes", pic.hex())
 
 compressed_fields = parsed_bytestream.zip_payloads[0][2:]
-print("compressed data", compressed_fields.hex())
+logger.debug("compressed data", compressed_fields.hex())
 
-decompressed_fields = zlib.decompress(compressed_fields)
-print(decompressed_fields.hex())
-print()
+uncompressed_fields = zlib.decompress(compressed_fields)
+logger.debug("uncompressed data", uncompressed_fields.hex())
 
-render_uncompressed(decompressed_fields)
+render_uncompressed(uncompressed_fields)
