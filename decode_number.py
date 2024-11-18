@@ -1,4 +1,5 @@
 from itertools import batched
+from typing import List
 
 
 class DecodeNumber:  # u1b
@@ -10,12 +11,16 @@ class DecodeNumber:  # u1b
     "a(II)V" method.
     """
 
+    _a: int
+    _b: int
+    buf: List[int]
+
     def __init__(self):
         self._a = 0
         self._b = 0
         self.buf = []
 
-    def a(self, a, b):
+    def a(self, a: int, b: int):
         if b > 0x20 or b < 0x1:
             raise Exception("out of range")  # i forgor the range
 

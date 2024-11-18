@@ -4,11 +4,17 @@ class U1C:
     whether the length of a struct is read as a byte or as a short.
     """
 
+    buffer: bytes
+    position: int
+    _a: int
+    b: int
+
     def __init__(self, buffer):
         self.buffer = buffer
         self.position = 0
         self._a = 0
         self.b = 0
+
         p1 = 0
 
         while True:
@@ -69,7 +75,7 @@ class U1C:
 
         return v2
 
-    def f(self, n: int):
+    def f(self, n: int) -> int:
         if n < 1 or n > 0x20:
             raise Exception(f"argument out of range: {n}")
 

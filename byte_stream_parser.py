@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from data_input_stream import DataInputStream
 from u1c import U1C
@@ -7,7 +8,19 @@ logger = logging.getLogger(__name__)
 
 
 class ByteStreamParser:
-    def __init__(self, buffer):
+    c: int
+    d: int
+    e: int
+
+    body: bytes
+    "non-signature-related bytes"
+
+    signature: bytes
+
+    aux_payloads: List[bytes]
+    zip_payloads: List[bytes]
+
+    def __init__(self, buffer: bytes):
         stream = DataInputStream(buffer)
 
         logger.debug(stream.read_byte())  # this can be 0x6 or 0x3
@@ -30,9 +43,6 @@ class ByteStreamParser:
         # excluding (1) zipped data, and (2) signature
         num_structs = stream.read_byte()
         logger.debug(num_structs)
-
-        # TODO: what's going on with s1/b;->g:Ljava/util/ArrayList
-        self.g = []
 
         for _ in range(num_structs):
             singleton_buf = [stream.read_byte()]
@@ -79,8 +89,7 @@ class ByteStreamParser:
             self.zip_payloads.append(stuffs)
             logger.debug(stuffs.hex())
 
-        # non-signature-related bytes
-        self.b = buffer[: stream.position]
+        self.body = buffer[: stream.position]
 
         logger.debug(stream.read_byte())  # ??
         logger.debug(stream.read_byte())  # ??
@@ -89,7 +98,7 @@ class ByteStreamParser:
         n = stream.read_short(signed=False)
         logger.debug(n)
 
-        self.a = stream.read(n)
-        logger.debug(self.a.hex())
+        self.signature = stream.read(n)
+        logger.debug(self.signature.hex())
 
         assert stream.position + 2 == len(buffer)

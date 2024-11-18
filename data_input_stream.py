@@ -5,15 +5,18 @@ context.endianness = "big"
 
 
 class DataInputStream:
-    def __init__(self, buffer):
-        self.bytes = buffer
+    buffer: bytes
+    position: int
+
+    def __init__(self, buffer: bytes):
+        self.buffer = buffer
         self.position = 0
 
     def is_empty(self):
-        return self.position >= len(self.bytes)
+        return self.position >= len(self.buffer)
 
     def read(self, length: int):
-        result = self.bytes[self.position : self.position + length]
+        result = self.buffer[self.position : self.position + length]
         self.position += length
         return result
 
