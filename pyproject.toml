@@ -1,0 +1,15 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pan-decode"
+version = "0.0.0"
+dependencies = ["pycryptodome", "pwntools"]
+requires-python = ">=3.12"
+description = "Decodes Indian PAN cards"
+readme = "README.md"
+license = { file = "LICENSE" }
+
+[project.scripts]
+pan-decode = "pan_decode.cli:main"

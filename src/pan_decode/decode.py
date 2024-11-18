@@ -5,10 +5,10 @@ from Crypto.Hash import SHA384
 from Crypto.PublicKey import ECC
 from Crypto.Signature import DSS
 
-from decode_number import decode_number
-from byte_stream_parser import ByteStreamParser
-from public_key import PUBLIC_KEY_CURVE, PUBLIC_KEY_X, PUBLIC_KEY_Y
-from renderer import render_uncompressed
+from .decode_number import decode_number
+from .byte_stream_parser import ByteStreamParser
+from .public_key import PUBLIC_KEY_CURVE, PUBLIC_KEY_X, PUBLIC_KEY_Y
+from .renderer import render_uncompressed
 
 logger = logging.getLogger(__name__)
 

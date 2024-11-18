@@ -1,8 +1,8 @@
 import logging
 from typing import List
 
-from data_input_stream import DataInputStream
-from u1c import U1C
+from .data_input_stream import DataInputStream
+from .u1c import U1C
 
 logger = logging.getLogger(__name__)
 

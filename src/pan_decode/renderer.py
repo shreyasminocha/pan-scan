@@ -1,5 +1,5 @@
-from data_input_stream import DataInputStream
-from u1c import U1C
+from .data_input_stream import DataInputStream
+from .u1c import U1C
 
 
 class ControlByte:
