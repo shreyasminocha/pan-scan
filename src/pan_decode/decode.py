@@ -28,7 +28,7 @@ def decode_pan_code(number: str) -> str:
     logger.debug("expected signature: %s", expected_signature.hex())
 
     hashed = SHA384.new(parsed_bytestream.body)
-    logger.debug("actual signature: %s", hashed.digest().hex())
+    logger.debug("checksum: %s", hashed.digest().hex())
 
     # public_key = base64.b64decode(PUBLIC_KEY)
     # public_key_preamble, public_key_point = public_key[:28], public_key[30:]
@@ -43,10 +43,10 @@ def decode_pan_code(number: str) -> str:
     logger.debug(pk)
 
     # FIXME: not sure which one it's supposed to be
-    randfunc = "deterministic-rfc6979"
-    # rand_func = "fips-186-3"
+    mode = "deterministic-rfc6979"
+    # mode = "fips-186-3"
 
-    verifier = DSS.new(pk, randfunc, encoding="binary")
+    verifier = DSS.new(pk, mode, encoding="binary")
 
     try:
         verifier.verify(hashed, expected_signature)
