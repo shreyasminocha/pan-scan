@@ -2,6 +2,8 @@
 
 Decodes the heavily obfuscated contents of QR codes on Indian [PAN cards](https://en.wikipedia.org/wiki/Permanent_account_number).
 
+Blog post coming soon.
+
 ## Installation
 
 ```sh
